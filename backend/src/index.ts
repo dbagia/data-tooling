@@ -1,14 +1,25 @@
 import express from 'express'
+import { loadCompanyTickers } from './usecases/loadCompanyTickers'
 
-const app = express()
 const PORT = 4000
 
-app.get('/api/hello', (_req, res) => {
-  res.json({ message: 'test' })
-})
+async function main(): Promise<void> {
+  const app = express()
 
-app.use(express.json())
+  app.get('/api/hello', (_req, res) => {
+    res.json({ message: 'test' })
+  })
 
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`)
+  // Load company tickers on startup. These will be locally cached.
+  // For the scope of this assignment, we assume that this data is static
+  await loadCompanyTickers()
+
+  app.listen(PORT, () => {
+    console.log(`Backend running on http://localhost:${PORT}`)
+  })
+}
+
+main().catch((error) => {
+  console.error('Failed to start backend', error)
+  process.exit(1)
 })
