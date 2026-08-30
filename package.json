@@ -1,0 +1,20 @@
+{
+  "name": "data-tooling",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "dipen.bagia@gmail.com",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "build": "npm run build --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "typescript": "^6.0.3"
+  }
+}

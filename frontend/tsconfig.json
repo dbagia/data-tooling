@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "files": [],
+  "compilerOptions": {
+    /* for shadcn*/
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "shared/*": ["../shared/src/*"]
+    }
+  },
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
