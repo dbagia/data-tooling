@@ -3,18 +3,12 @@ import { fetchCompanyTickers } from '../clients/EdgarClient'
 // Company tickers will be cached here
 let tickerToCik: Map<string, string> = new Map()
 
-const CIK_LENGTH = 10
-
-const normalizeCik = (cik: string): string => {
-  return cik.padStart(CIK_LENGTH, cik)
-}
-
 export async function loadCompanyTickers(): Promise<void> {
   const raw = await fetchCompanyTickers()
 
   const map = new Map<string, string>()
   for (const { ticker, cik_str } of Object.values(raw)) {
-    map.set(ticker.toUpperCase(), normalizeCik(String(cik_str)))
+    map.set(ticker.toUpperCase(), String(cik_str))
   }
 
   tickerToCik = map
