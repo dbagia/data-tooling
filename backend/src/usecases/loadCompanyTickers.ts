@@ -1,5 +1,12 @@
 import { fetchCompanyTickers } from '../clients/EdgarClient'
 
+export class UnknownTickerError extends Error {
+  constructor(ticker: string) {
+    super(`Unknown ticker "${ticker}"`)
+    this.name = 'UnknownTickerError'
+  }
+}
+
 // Company tickers will be cached here
 let tickerToCik: Map<string, string> = new Map()
 

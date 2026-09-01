@@ -1,5 +1,6 @@
 import express from 'express'
 import { loadCompanyTickers } from './usecases/loadCompanyTickers'
+import submissionsRouter from './routes/v1/submissions'
 
 const PORT = 4000
 
@@ -9,6 +10,8 @@ async function main(): Promise<void> {
   app.get('/api/hello', (_req, res) => {
     res.json({ message: 'test' })
   })
+
+  app.use('/v1/companies', submissionsRouter)
 
   // Load company tickers on startup. These will be locally cached.
   // For the scope of this assignment, we assume that this data is static
