@@ -1,12 +1,12 @@
 import { CompanySubmissions, RawSubmissionsResponse } from '../types/submissions'
 import { getCikFromTicker } from './loadCompanyTickers'
 import { fetchCompanySubmissions } from '../clients/EdgarClient'
-import { transformRecentFilings } from '../utils'
+import { transformRecentFilings } from '../utils/submissions'
 
 const CIK_LENGTH = 10
 
 const normalizeCik = (cik: string): string => {
-  return cik.padStart(CIK_LENGTH, cik)
+  return cik.padStart(CIK_LENGTH, '0')
 }
 
 const cache = new Map<string, Promise<RawSubmissionsResponse>>()
