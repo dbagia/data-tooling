@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import { loadCompanyTickers } from './usecases/loadCompanyTickers'
 import submissionsRouter from './routes/v1/submissions'
 
@@ -6,6 +7,10 @@ const PORT = 4000
 
 async function main(): Promise<void> {
   const app = express()
+
+  app.use(cors({
+    origin: 'http://localhost:5173'
+  }))
 
   app.get('/api/hello', (_req, res) => {
     res.json({ message: 'test' })
