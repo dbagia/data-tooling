@@ -1,4 +1,4 @@
-import { Filing, RawRecentFilings } from './types/submissions'
+import { Filing, RawRecentFilings } from '../types/submissions'
 
 const EDGAR_ARCHIVES_BASE_URL = 'https://www.sec.gov/Archives/edgar/data'
 
