@@ -1,5 +1,5 @@
 import { CompanySubmissions, RawSubmissionsResponse } from '../types/submissions'
-import { getCikFromTicker } from './loadCompanyTickers'
+import { getCikFromTicker, UnknownTickerError } from './loadCompanyTickers'
 import { fetchCompanySubmissions } from '../clients/EdgarClient'
 import { transformRecentFilings } from '../utils/submissions'
 
@@ -15,7 +15,7 @@ export async function getSubmissions(ticker: string): Promise<CompanySubmissions
   const rawCik = getCikFromTicker(ticker.toUpperCase())
 
   if (!rawCik) {
-    throw new Error('Ticker not found')
+    throw new UnknownTickerError('Ticker not found')
   }
 
   const cik = normalizeCik(rawCik)
