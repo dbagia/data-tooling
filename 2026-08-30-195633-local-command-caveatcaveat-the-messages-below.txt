@@ -1,0 +1,1730 @@
+ ▐▛███▛█   Claude Code v2.1.251
+▝▜██████▀  Sonnet 5 · Claude Pro
+  ▝▝ ▝▝    ~/dbagia/data-tooling-assignment/backend
+
+  Tackle your toughest work with Opus 5. Switch anytime with /model.
+
+❯ /login                                                                        
+  ⎿  Login successful
+
+❯ /model                                                                        
+  ⎿  Set model to Sonnet 5 (default) and saved as your default for new sessions
+
+❯ /effort                                                                       
+  ⎿  Cancelled
+
+❯ We have a monorepo template I have copied from another project. Upgrade the   
+  packages to latest versions                                                   
+
+  Read 4 files, listed 1 directory, ran 2 shell commands (ctrl+o to expand)
+
+● Good, network access works. Let me check current outdated status across all
+  workspaces first, then update.
+
+  Read 3 files, ran 6 shell commands (ctrl+o to expand)
+
+● Good, it's a fairly minimal scaffold (default vite/shadcn template + a small
+  express backend). Let me install and build to catch breakage from the major
+  bumps.
+
+  Ran 5 shell commands (ctrl+o to expand)
+
+● TypeScript 7.0.2 is too new for the toolchain — typescript-eslint and ts-jest
+  haven't caught up yet (their peer ranges cap at <6.1.0 / <7). I'll pin
+  TypeScript to the latest version those tools actually support (6.0.3) instead
+  of the raw "latest" tag, then verify everything builds.
+
+● Update(~/dbagia/data-tooling-assignment/package.json)
+  ⎿  Added 1 line, removed 1 line
+      15    },
+      16    "devDependencies": {
+      17      "concurrently": "^10.0.5",
+      18 -    "typescript": "^7.0.2"                                     
+      18 +    "typescript": "^6.0.3"                                     
+      19    }
+      20  }
+
+● Update(~/dbagia/data-tooling-assignment/frontend/package.json)
+  ⎿  Added 1 line, removed 1 line
+      39      "globals": "^17.11.0",
+      40      "prettier": "^3.9.6",
+      41      "tw-animate-css": "^1.4.0",
+      42 -    "typescript": "~7.0.2",                                    
+      42 +    "typescript": "~6.0.3",                                    
+      43      "typescript-eslint": "^8.68.0",
+      44      "vite": "^8.2.2"
+      45    }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● No peer conflicts this time. Now let's build and lint everything to catch real
+  breakage from the major version bumps (lucide-react 0→1,
+  react-resizable-panels 3→4, vite 7→8, eslint 9→10, eslint-plugin-react-refresh
+  0.4→0.5, etc.).
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● TypeScript 6.0 deprecates baseUrl (paths now resolve relative to the config
+  file automatically) and requires an explicit rootDir when outDir is set. Let
+  me fix the tsconfigs accordingly rather than suppressing the errors.
+  Read 5 files (ctrl+o to expand)
+
+● Update(~/dbagia/data-tooling-assignment/tsconfig.base.json)
+  ⎿  Removed 1 line
+       7      "esModuleInterop": true,
+       8      "skipLibCheck": true,
+       9      "forceConsistentCasingInFileNames": true,
+      10 -    "baseUrl": "./",                                           
+      10      "paths": {
+      11        "shared/*": ["./shared/src/*"]
+      12      }
+
+● Update(~/dbagia/data-tooling-assignment/frontend/tsconfig.json)
+  ⎿  Removed 1 line
+      3    "files": [],
+      4    "compilerOptions": {
+      5      /* for shadcn*/
+      6 -    "baseUrl": ".",                                             
+      6      "paths": {
+      7        "@/*": ["./src/*"],
+      8        "shared/*": ["../shared/src/*"]
+
+● Update(~/dbagia/data-tooling-assignment/frontend/tsconfig.app.json)
+  ⎿  Removed 1 line
+      22      "erasableSyntaxOnly": true,
+      23      "noFallthroughCasesInSwitch": true,
+      24      "noUncheckedSideEffectImports": true,
+      25 -    "baseUrl": ".",                                            
+      25      "paths": {
+      26        "@/*": ["./src/*"],
+      27        "shared/*": ["../shared/src/*"]
+
+● Update(~/dbagia/data-tooling-assignment/shared/tsconfig.json)
+  ⎿  Added 2 lines, removed 1 line
+      1  {
+      2    "extends": "../tsconfig.base.json",
+      3    "compilerOptions": {
+      4 -    "outDir": "dist"                                            
+      4 +    "outDir": "dist",                                           
+      5 +    "rootDir": "src"                                            
+      6    },
+      7    "include": ["src"]
+      8  }
+
+● Update(tsconfig.json)
+  ⎿  Added 3 lines
+      1  {
+      2    "extends": "../tsconfig.base.json",
+      3 +  "compilerOptions": {                                          
+      4 +    "rootDir": "src"                                            
+      5 +  },                                                            
+      6    "include": ["src"],
+      7    "exclude": ["node_modules"]
+      8  }
+
+  Searched for 5 patterns, read 2 files, listed 1 directory, ran 7 shell commands (ctrl+o to expand)
+
+● Found it — in v7 the flat config moved to
+  reactHooks.configs.flat['recommended-latest'] (the old
+  reactHooks.configs['recommended-latest'] path is now the legacy/eslintrc-style
+  shape). Let me fix the frontend eslint config, then address the backend's
+  jest.config.js CommonJS lint errors.
+
+● Update(~/dbagia/data-tooling-assignment/frontend/eslint.config.js)
+  ⎿  Added 1 line, removed 1 line
+      12      extends: [
+      13        js.configs.recommended,
+      14        tseslint.configs.recommended,
+      15 -      reactHooks.configs['recommended-latest'],                
+      15 +      reactHooks.configs.flat['recommended-latest'],           
+      16        reactRefresh.configs.vite,
+      17      ],
+      18      languageOptions: {
+
+  Ran 6 shell commands (ctrl+o to expand)
+
+● Good — backend src lints clean; the jest.config.js issue is a pre-existing
+  config gap (missing Node globals for plain .js files), unrelated to the
+  upgrade. Now let's run tests.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● The bundler itself works fine (25 modules transformed) — the only failures are
+  pre-existing missing source files, unrelated to the dependency upgrade.
+  There's also a forward-compat warning about __dirname in vite.config.ts; let
+  me fix that since it's flagged by the new Vite version.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(~/dbagia/data-tooling-assignment/frontend/vite.config.ts)  ⎿  Added 2 lines, removed 2 lines
+       8    plugins: [react(), tailwindcss()],
+       9    resolve: {
+      10      alias: {
+      11 -      '@': path.resolve(__dirname, './src'),                   
+      12 -      'shared': path.resolve(__dirname, '../shared/src'),      
+      11 +      '@': path.resolve(import.meta.dirname, './src'),         
+      12 +      'shared': path.resolve(import.meta.dirname, '../shared/sr
+         +c'),                                                           
+      13      },
+      14    },
+      15    server: {
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Warning gone. Now let's double check the shared and backend tsc builds pass on
+  the parts that do exist (isolating the missing-file issue), and re-run the
+  full monorepo build to get final confirmation of exactly what's outstanding.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Confirmed: the only remaining build errors are the pre-existing missing source
+  files (unrelated to the upgrade). Everything else — install, tsconfig, eslint
+  configs, vite bundling — checks out clean. Let me update memory with the
+  durable lesson from this session, then give the final report.
+
+  Ran 2 shell commands, wrote 1 memory (ctrl+o to expand)
+  ⎿  Remembered when upgrading TypeScript to its latest major, check that types…
+
+● Done. All three workspaces (backend, frontend, shared) plus the root are
+  upgraded and reinstall cleanly with 0 vulnerabilities.
+
+  What changed:
+  - Bumped every dependency to its latest published version (React 19.2, Vite
+    8.2, Tailwind 4.3, ESLint 10.9, express 5.2, zod 4.5, etc.) — full diffs in
+    the four package.json files.
+  - TypeScript pinned to ^6.0.3, not the raw latest (7.0.2): typescript-eslint
+    and ts-jest haven't been updated for TS 7 yet (their peer ranges cap at
+    <6.1.0 / <7), so taking 7.0.2 verbatim breaks the lint/test toolchain with
+    ERESOLVE conflicts. 6.0.3 is the newest release both tools actually support.
+  - Fixed fallout from the TS 6.0 bump: it turns baseUrl and ambiguous
+    rootDir/outDir into hard errors instead of warnings. Removed baseUrl from
+    all four tsconfigs (path mappings resolve the same way without it) and added
+    explicit rootDir to shared/tsconfig.json and backend/tsconfig.json.
+  - Fixed the frontend ESLint config: eslint-plugin-react-hooks v7 moved its
+    flat-config export from configs['recommended-latest'] to
+    configs.flat['recommended-latest'] — the old path now resolves to a
+    legacy-format object that ESLint 10 flat config rejects outright.
+  - Fixed a Vite 8 forward-compat warning in frontend/vite.config.ts (__dirname
+    → import.meta.dirname).
+
+  Verified: clean npm install, ESLint config loads and lints backend/frontend
+  src clean, Vite/Tailwind/React bundling pipeline transforms all 25 modules
+  successfully.
+
+  Not fixed (pre-existing, unrelated to the upgrade): this template is missing
+  several application files entirely — shared/src/types.ts,
+  frontend/src/components/ShipmentForm.tsx and Offers.tsx, and the backend's
+  usecases/getOffersForShipment.ts plus its route wiring — so tsc/vite build
+  fail on unresolved imports, and there are no test files for jest to run. These
+  were absent before I touched anything (confirmed by Cannot find module
+  pointing at files that never existed on disk), so they look like they didn't
+  make it over when the template was copied — worth flagging since it's more
+  than a version bump can fix.
+
+  Also noted but left alone: backend/eslint.config.ts uses browser globals
+  instead of Node globals for the CommonJS block, so jest.config.js fails
+  no-undef on require/module — a pre-existing config gap, not caused by the
+  version bumps (backend's actual src lints fine).
+
+✻ Brewed for 9m 33s · done 1:36 PM
+
+❯ We will being with backend developement under the backend/ directory. My high 
+  level goal is to build an API that reads submissions from SEC EDGAR API,      
+  transform the columnar data into an array of objects, store/cache the         
+  response and serve paginated results via a GET API. I will provide more       
+  instructions on concurrency considerations, type validations etc as we move   
+  along. But for now, we will start simple                                      
+
+  Searched for 1 pattern, read 9 files, ran 1 shell command (ctrl+o to expand)
+
+● This backend currently still contains leftover scaffold from a prior
+  "shipments and offers" assignment (getOffersForShipment, a database/Client
+  that doesn't exist, a stray shared/index.ts export) — none of it relevant to
+  SEC EDGAR submissions, and some of it doesn't even compile. I'll clear that
+  out and build the new feature on top of the existing layered structure (routes
+  → handlers → usecases) since that's already in place and tested.
+
+  A couple of assumptions I'm making to keep this simple, flagging them rather
+  than blocking on questions:
+  - CIK is a path param (GET /api/v1/submissions/:cik) since SEC's submissions
+    endpoint is per-company.
+  - Pagination is plain page/limit query params, parsed manually (no zod schema
+    yet) — you mentioned type validation is a later topic, so I'm not
+    gold-plating that now.
+  - Cache is a bare in-memory Map, no TTL/invalidation — concurrency/expiry is
+    explicitly a "later" topic per your note.
+  - SEC requires a compliant User-Agent (AppName contact@domain) on every
+    request or it 403s you. I'm reading it from an env var you set yourself
+    rather than hardcoding any contact info.
+
+  Let me build this out.
+
+● Write(~/dbagia/data-tooling-assignment/shared/src/index.ts)
+  ⎿  Added 3 lines, removed 1 line
+      1 -export { Shipment } from './types'                              
+      1 +// Intentionally empty for now. This package is a place to put t
+        +ypes/utilities                                                  
+      2 +// shared between the frontend and backend once we need them.   
+      3 +export {}                                                       
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(~/dbagia/data-tooling-assignment/.gitignore)
+  ⎿  Added 4 lines
+      12  dist-ssr
+      13  *.local
+      14  
+      15 +.env                                                           
+      16 +.env.*                                                         
+      17 +!.env.example                                                  
+      18 +                                                               
+      19  # Editor directories and files
+      20  .vscode/*
+      21  !.vscode/extensions.json
+
+● Now the core feature files.
+
+● Write(.env.example)
+  ⎿  Wrote 8 lines to .env.example
+      1 # Port the backend HTTP server listens on.
+      2 PORT=4000
+      3 
+      4 # SEC EDGAR requires every request to identify the caller with a 
+        descriptive
+      5 # User-Agent header (name + contact email), or it will respond wi
+        th 403/429.
+      6 # See: https://www.sec.gov/os/webmaster-faq#developers
+      7 # Format: "<app or company name> <contact email>"
+      8 SEC_EDGAR_USER_AGENT="Data Tooling Assignment you@example.com"
+
+● Write(src/config/env.ts)
+  ⎿  Wrote 16 lines to src/config/env.ts
+       1 import 'dotenv/config'
+       2 
+       3 function requireEnv(name: string): string {
+       4   const value = process.env[name]
+       5   if (!value) {
+       7       `Missing required environment variable "${name}". See back
+         end/.env.example for the expected format.`,
+       8     )
+       9   }
+      10   return value
+     … +7 lines (ctrl+o to expand)
+
+● Write(src/types/submissions.ts)
+  ⎿  Wrote 60 lines to src/types/submissions.ts
+       1 /**
+         's submissions
+       3  * API. Every field is a parallel array: the filing at index `i`
+       4  * by `accessionNumber[i]`, `filingDate[i]`, `form[i]`, etc.
+       5  *
+         , tickers,
+       7  * exchanges, ...) and `filings.files` (links to older, paginate
+       8  * We don't need any of that yet, so `RawSubmissionsResponse` on
+         ly types what
+      10  */
+     … +57 lines (ctrl+o to expand)
+
+● Write(src/lib/cik.ts)
+  ⎿  Wrote 17 lines to src/lib/cik.ts
+      1 /** SEC EDGAR CIKs are zero-padded to 10 digits in URLs (e.g. App
+        le = CIK0000320193). */
+      2 const CIK_LENGTH = 10
+      3 
+      4 export class InvalidCikError extends Error {
+      6     super(`Invalid CIK "${input}": expected up to ${CIK_LENGTH} d
+        igits`)
+      7     this.name = 'InvalidCikError'
+      8   }
+      9 }
+     … +10 lines (ctrl+o to expand)
+
+● Write(src/lib/cache.ts)
+  ⎿  Wrote 21 lines to src/lib/cache.ts
+       1 /**
+       2  * Minimal in-memory cache. No TTL or eviction yet — entries liv
+       3  * lifetime of the process. This is intentionally basic; expiry 
+         and
+       4  * concurrency-safe population (e.g. avoiding duplicate in-fligh
+       5  * the same key) will be revisited later.
+       6  */
+       7 export class InMemoryCache<T> {
+       9 
+      10   get(key: string): T | undefined {
+     … +13 lines (ctrl+o to expand)
+
+● Write(src/lib/pagination.ts)
+  ⎿  Wrote 18 lines to src/lib/pagination.ts
+       1 export interface PaginatedResult<T> {
+       2   data: T[]
+       3   page: number
+       4   limit: number
+       5   total: number
+       7 }
+       8 
+       9 export function paginate<T>(items: T[], page: number, limit: num
+         ber): PaginatedResult<T> {
+      10   const start = (page - 1) * limit
+     … +9 lines (ctrl+o to expand)
+
+● Write(src/transformers/submissions.ts)
+  ⎿  Wrote 31 lines to src/transformers/submissions.ts
+      1 import { Filing, RawRecentFilings } from '../types/submissions'
+      2 
+      3 /**
+         (columnar
+      5  * data) rather than an array of filing objects. This zips them b
+        ack into one
+      6  * object per filing, indexed by position.
+      8 export function transformRecentFilings(recent: RawRecentFilings):
+         Filing[] {
+      9   const count = recent.accessionNumber.length
+     … +24 lines (ctrl+o to expand)
+
+● Write(src/services/secEdgarClient.ts)
+  ⎿  Wrote 41 lines to src/services/secEdgarClient.ts
+       1 import { env } from '../config/env'
+       2 import { RawSubmissionsResponse } from '../types/submissions'
+       3 
+       4 const BASE_URL = 'https://data.sec.gov/submissions'
+       5 
+       6 export class SecEdgarNotFoundError extends Error {
+       7   constructor(cik: string) {
+       8     super(`No SEC EDGAR submissions found for CIK ${cik}`)
+       9     this.name = 'SecEdgarNotFoundError'
+      10   }
+     … +35 lines (ctrl+o to expand)
+● Write(src/usecases/getCompanySubmissions.ts)
+  ⎿  Wrote 26 lines to src/usecases/getCompanySubmissions.ts
+       1 import { InMemoryCache } from '../lib/cache'
+       2 import { normalizeCik } from '../lib/cik'
+         ent'
+       4 import { transformRecentFilings } from '../transformers/submissi
+         ons'
+       6 
+       7 const cache = new InMemoryCache<CompanySubmissions>()
+       8 
+         romise<CompanySubmissions> {
+      10   const cik = normalizeCik(cikInput)
+     … +17 lines (ctrl+o to expand)
+
+● Write(src/handlers/handleSubmissions.ts)
+  ⎿  Added 44 lines, removed 10 lines
+       1  import { Request, Response } from 'express'
+       2 -import { getOffersForShipment } from '../usecases/getOffersForS
+         -hipment'                                                       
+       2 +import { InvalidCikError } from '../lib/cik'                   
+       3 +import { paginate } from '../lib/pagination'                   
+       4 +import { SecEdgarNotFoundError } from '../services/secEdgarClie
+         +nt'                                                            
+       5 +import { getCompanySubmissions } from '../usecases/getCompanySu
+         +bmissions'                                                     
+       6  
+       4 -export async function handleOffers(req: Request, res: Response)
+         -: Promise<void> {                                              
+       5 -  const shipment = req.body                                    
+       7 +const DEFAULT_PAGE = 1                                         
+       8 +const DEFAULT_LIMIT = 20                                       
+       9 +const MAX_LIMIT = 100                                          
+      10  
+      11 +function parsePositiveInt(value: unknown, fallback: number, max
+         +?: number): number | undefined {                               
+      12 +  if (value === undefined) {                                   
+      13 +    return fallback                                            
+      14 +  }                                                            
+      15 +  const parsed = Number(value)                                 
+      16 +  if (!Number.isInteger(parsed) || parsed < 1) {               
+      17 +    return undefined                                           
+      18 +  }                                                            
+      19 +  return max ? Math.min(parsed, max) : parsed                  
+      20 +}                                                              
+      21 +                                                               
+      22 +export async function handleSubmissions(req: Request, res: Resp
+         +onse): Promise<void> {                                         
+      23 +  const { cik } = req.params                                   
+      24 +                                                               
+      25 +  const page = parsePositiveInt(req.query.page, DEFAULT_PAGE)  
+      26 +  const limit = parsePositiveInt(req.query.limit, DEFAULT_LIMIT
+         +, MAX_LIMIT)                                                   
+      27 +  if (page === undefined || limit === undefined) {             
+      28 +    res.status(400).send({ message: 'page and limit must be pos
+         +itive integers' })                                             
+      29 +    return                                                     
+      30 +  }                                                            
+      31 +                                                               
+      32    try {
+       8 -    const offers = await getOffersForShipment(shipment, req.cli
+         -ent)                                                           
+      33 +    const submissions = await getCompanySubmissions(cik)       
+      34 +    const paginatedFilings = paginate(submissions.filings, page
+         +, limit)                                                       
+      35  
+      10 -    if (!offers.length) {                                      
+      11 -      res.status(404).send('No offers available for the provide
+         -d shipment data')                                              
+      36 +    res.status(200).send({                                     
+      37 +      cik: submissions.cik,                                    
+      38 +      name: submissions.name,                                  
+      39 +      ...paginatedFilings,                                     
+      40 +    })                                                         
+      41 +  } catch (error) {                                            
+      42 +    if (error instanceof InvalidCikError) {                    
+      43 +      res.status(400).send({ message: error.message })         
+      44        return
+      45      }
+      14 -    res.status(200).send(offers)                               
+      15 -  } catch (error) {                                            
+      16 -    console.error(`Failed to fetch offers for the provided ship
+         -ment`, { shipment, error })                                    
+      17 -    res.status(500).send('Something went wrong')               
+      46 +    if (error instanceof SecEdgarNotFoundError) {              
+      47 +      res.status(404).send({ message: error.message })         
+      48 +      return                                                   
+      49 +    }                                                          
+      50 +    console.error('Failed to fetch submissions', { cik, error }
+         +)                                                              
+      51 +    res.status(502).send({ message: 'Failed to fetch submission
+         +s from SEC EDGAR' })                                           
+      52    }
+      53  }
+
+● Write(src/routes/v1/submissions.ts)
+  ⎿  Added 2 lines, removed 2 lines
+      1  import express from 'express'
+      2 -import { handleOffers } from '../../handlers/handleOffers'      
+      2 +import { handleSubmissions } from '../../handlers/handleSubmissi
+        +ons'                                                            
+      3  
+      4  const router = express.Router()
+      5 -router.get('/', handleOffers)                                   
+      5 +router.get('/:cik', handleSubmissions)                          
+      6  
+      7  export default router
+
+● Write(src/index.ts)
+  ⎿  Added 5 lines, removed 7 lines
+       1  import express from 'express'
+       2 +import { env } from './config/env'                             
+       3 +import submissionsRouter from './routes/v1/submissions'        
+       4  
+       5  const app = express()
+       4 -const PORT = 4000                                              
+       6  
+       6 -app.get('/api/hello', (_req, res) => {                         
+       7 -  res.json({ message: 'test' })                                
+       8 -})                                                             
+       9 -                                                               
+       7  app.use(express.json())
+       8 +app.use('/api/v1/submissions', submissionsRouter)              
+       9  
+      12 -app.listen(PORT, () => {                                       
+      13 -  console.log(`Backend running on http://localhost:${PORT}`)   
+      10 +app.listen(env.port, () => {                                   
+      11 +  console.log(`Backend running on http://localhost:${env.port}`
+         +)                                                              
+      12  })
+
+● Write(testService.sh)
+  ⎿  Added 5 lines, removed 9 lines
+       1  #!/usr/bin/env bash
+       2  
+       3 -BASE_URL="http://localhost:4000/api"                           
+       3 +BASE_URL="http://localhost:4000/api/v1"                        
+       4  
+       5 -echo "Testing POST /offers/v1"                                 
+       6 -curl -X POST -s -w "\nHTTP %{http_code}\n" -H "Content-Type: ap
+         -plication/json" \                                              
+       7 -  -d '{"originAddress":{"country":"SE"},"destinationAddress":{"
+         -country":"SE"},"packages":[{"quantity":1,"weight":100,"dimensio
+         -ns":{"width":10,"height":10,"length":10}},{"quantity":2,"weight
+         -":10,"dimensions":{"width":10,"height":10,"length":10}}]}' \   
+       8 -  "$BASE_URL/offers/v1"                                        
+       5 +echo "Testing GET /submissions/:cik (Apple, CIK 320193)"       
+       6 +curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/32019
+         +3?page=1&limit=5"                                              
+       7  
+      10 -echo "Testing POST /offers/v1 Shipment with empty packages"    
+      11 -curl -X POST -s -w "\nHTTP %{http_code}\n" -H "Content-Type: ap
+         -plication/json" \                                              
+      12 -  -d '{"originAddress":{"country":"SE"},"destinationAddress":{"
+         -country":"SE"},"packages":[]}' \                               
+      13 -  "$BASE_URL/offers/v1"                                        
+       8 +echo "Testing GET /submissions/:cik with an invalid CIK"       
+       9 +curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/not-a
+         +-cik"                                                          
+
+● Now let's build, lint, and smoke-test the whole thing end to end.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Update(src/handlers/handleSubmissions.ts)
+  ⎿  Added 4 lines, removed 1 line
+      20  }
+      21  
+      22  export async function handleSubmissions(req: Request, res: Resp
+          onse): Promise<void> {
+      23 -  const { cik } = req.params                                   
+      23 +  // Express 5 types route params as `string | string[]` to acc
+         +ount for                                                       
+      24 +  // repeated wildcard segments; our `:cik` segment is always a
+         + single value.                                                 
+      25 +  const cikParam = req.params.cik                              
+      26 +  const cik = Array.isArray(cikParam) ? cikParam[0] : cikParam 
+      27  
+      28    const page = parsePositiveInt(req.query.page, DEFAULT_PAGE)
+      29    const limit = parsePositiveInt(req.query.limit, DEFAULT_LIMIT
+          , MAX_LIMIT)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Backend and shared now build clean; only the (expected, pre-existing,
+  out-of-scope) frontend leftovers still fail. Let's build just the backend
+  workspace directly to confirm, then lint and smoke-test the running server.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Clean. Now let's smoke-test the actual running server against real SEC EDGAR
+  data.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I made a mistake — I just put the user's real email into a header that's about
+  to be sent to SEC's external servers, without being asked to. Let me undo
+  that before any request goes out and use a non-identifying placeholder
+  instead.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Good, fixed before it reached the network. Now let's smoke-test the server.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● Found a real bug — backend/tsconfig.json doesn't override outDir, so it
+  inherits the base config's dist path resolved relative to the base config's
+  location (repo root), not to backend/. That's why the build silently landed in
+  <repo-root>/dist instead of backend/dist, breaking main and the dev script.
+  Fixing it:
+
+● Update(tsconfig.json)
+  ⎿  Added 1 line
+      1  {
+      2    "extends": "../tsconfig.base.json",
+      3    "compilerOptions": {
+      4 +    "outDir": "dist",                                           
+      5      "rootDir": "src"
+      6    },
+      7    "include": ["src"],
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Now correctly in backend/dist. Let's smoke-test the server for real.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Both requests behave correctly — real Apple filings paginated (page:1, 
+  limit:5, total:1000, totalPages:200), and an invalid CIK correctly returns
+  400. Let me clean up the smoke-test artifacts and check the full picture once
+  more.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Working end to end, verified against live SEC EDGAR data. Here's what's in
+  place:
+
+  Cleaned up: removed leftover scaffold from the prior "shipments and offers"
+  assignment that didn't compile (getOffersForShipment, a nonexistent
+  database/Client, a stray Shipment re-export in shared/), and deleted
+  src/types/express.d.ts which referenced it.
+
+  New flow (GET /api/v1/submissions/:cik?page=&limit=):
+  - services/secEdgarClient.ts — fetches
+    https://data.sec.gov/submissions/CIK{10-digit}.json, sends the required SEC
+    User-Agent.
+  - transformers/submissions.ts — zips the columnar filings.recent parallel
+    arrays into an array of Filing objects.
+  - lib/cache.ts — bare in-memory Map keyed by normalized CIK, no TTL yet
+    (deferred, per your note on concurrency later).
+  - usecases/getCompanySubmissions.ts — cache-or-fetch-and-transform
+    orchestration.
+  - handlers/handleSubmissions.ts + lib/pagination.ts — parses page/limit by
+    hand (no zod schema yet, since you said type validation is coming later),
+    paginates, returns {cik, name, data, page, limit, total, totalPages}.
+  - lib/cik.ts — normalizes/validates the CIK (400 on garbage input, 404 via
+    SecEdgarNotFoundError on unknown CIK, 502 on upstream failure).
+
+  Bug fixed along the way: backend/tsconfig.json didn't override outDir, so it
+  silently inherited the base config's dist path resolved against the base
+  file's location — builds were landing in <repo-root>/dist instead of
+  backend/dist, which would've broken main/dev the moment anyone ran the built
+  server. Added the missing outDir override.
+
+  Config: added backend/.env.example documenting PORT and SEC_EDGAR_USER_AGENT
+  (SEC 403s requests without a compliant contact string), and gitignored .env. I
+  created a local backend/.env with a placeholder test@example.com for
+  smoke-testing only — swap in your own contact string before relying on this
+  for anything real, since SEC does log/rate-limit by User-Agent.
+
+  Verified: npm run build --workspace backend clean, eslint src clean, and a
+  live run against Apple's CIK (320193) returned real paginated filings; an
+  invalid CIK correctly 400s.
+
+  Ready for your next round of instructions (concurrency, validation, etc.)
+  whenever you want to build on this.
+
+✻ Churned for 5m 39s · done 1:58 PM
+❯ The input to the API is not CIK but rather company ticker. We have to resolve 
+  CIK from ticker based on the data available at                                
+  https://www.sec.gov/files/company_tickers.json. Since this is a static data,  
+  I want you to pre-fetch it into the memory when the service starts, transform 
+  it into an efficient data structure so the lookup is fast (like a Map) and    
+  strip away unnecessary data. We only need mapping from ticker -> CIK          
+
+● Write(src/types/tickers.ts)
+  ⎿  Wrote 11 lines to src/types/tickers.ts
+      1 /**
+      2  * Shape of https://www.sec.gov/files/company_tickers.json — an o
+        bject keyed
+      3  * by an arbitrary numeric index, each value describing one ticke
+        r.
+      5 export interface RawCompanyTickerEntry {
+      6   cik_str: number
+      7   ticker: string
+      8   title: string
+      9 }
+     … +3 lines (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(src/services/secEdgarClient.ts)
+  ⎿  Added 25 lines, removed 10 lines
+       1  import { env } from '../config/env'
+       2  import { RawSubmissionsResponse } from '../types/submissions'
+       3 +import { RawCompanyTickers } from '../types/tickers'           
+       4  
+       4 -const BASE_URL = 'https://data.sec.gov/submissions'            
+       5 +const SUBMISSIONS_BASE_URL = 'https://data.sec.gov/submissions'
+       6 +const COMPANY_TICKERS_URL = 'https://www.sec.gov/files/company_
+         +tickers.json'                                                  
+       7  
+       8 +// Required by SEC's fair access policy on every request, or th
+         +ey get 403'd.                                                  
+       9 +const REQUEST_HEADERS = {                                      
+      10 +  'User-Agent': env.secEdgarUserAgent,                         
+      11 +  Accept: 'application/json',                                  
+      12 +}                                                              
+      13 +                                                               
+      14  export class SecEdgarNotFoundError extends Error {
+      15    constructor(cik: string) {
+      16      super(`No SEC EDGAR submissions found for CIK ${cik}`)
+     ...
+      20  
+      21  export class SecEdgarRequestError extends Error {
+      22    constructor(
+      15 -    cik: string,                                               
+      23 +    resource: string,                                          
+      24      public readonly status: number,
+      25    ) {
+      18 -    super(`SEC EDGAR request for CIK ${cik} failed with status 
+         -${status}`)                                                    
+      26 +    super(`SEC EDGAR request for ${resource} failed with status
+         + ${status}`)                                                   
+      27      this.name = 'SecEdgarRequestError'
+      28    }
+      29  }
+      30  
+      31  /** `cik` must already be normalized to SEC's zero-padded 10-di
+          git form. */
+      32  export async function fetchCompanySubmissions(cik: string): Pro
+          mise<RawSubmissionsResponse> {
+      25 -  const response = await fetch(`${BASE_URL}/CIK${cik}.json`, { 
+      26 -    headers: {                                                 
+      27 -      // Required by SEC's fair access policy, or requests get 
+         -403'd.                                                         
+      28 -      'User-Agent': env.secEdgarUserAgent,                     
+      29 -      Accept: 'application/json',                              
+      30 -    },                                                         
+      33 +  const response = await fetch(`${SUBMISSIONS_BASE_URL}/CIK${ci
+         +k}.json`, {                                                    
+      34 +    headers: REQUEST_HEADERS,                                  
+      35    })
+      36  
+      37    if (response.status === 404) {
+      38      throw new SecEdgarNotFoundError(cik)
+      39    }
+      40    if (!response.ok) {
+      37 -    throw new SecEdgarRequestError(cik, response.status)       
+      41 +    throw new SecEdgarRequestError(`CIK ${cik}`, response.statu
+         +s)                                                             
+      42    }
+      43  
+      44    return (await response.json()) as RawSubmissionsResponse
+      45  }
+      46 +                                                               
+      47 +/** The full ticker -> company directory SEC publishes as one s
+         +tatic file. */                                                 
+      48 +export async function fetchCompanyTickers(): Promise<RawCompany
+         +Tickers> {                                                     
+      49 +  const response = await fetch(COMPANY_TICKERS_URL, { headers: 
+         +REQUEST_HEADERS })                                             
+      50 +                                                               
+      51 +  if (!response.ok) {                                          
+      52 +    throw new SecEdgarRequestError('company_tickers.json', resp
+         +onse.status)                                                   
+      53 +  }                                                            
+      54 +                                                               
+      55 +  return (await response.json()) as RawCompanyTickers          
+      56 +}                                                              
+
+● Now the ticker directory module (loaded once at startup):
+
+● Write(src/services/tickerDirectory.ts)
+  ⎿  Wrote 33 lines to src/services/tickerDirectory.ts
+      1 import { normalizeCik } from '../lib/cik'
+      2 import { fetchCompanyTickers } from './secEdgarClient'
+      3 
+      4 export class UnknownTickerError extends Error {
+      5   constructor(ticker: string) {
+      6     super(`Unknown ticker "${ticker}"`)
+      7     this.name = 'UnknownTickerError'
+      8   }
+      9 }
+     … +26 lines (ctrl+o to expand)
+
+● Now the ticker-aware usecase, handler, route, and startup wiring:
+
+● Write(src/usecases/getCompanySubmissionsByTicker.ts)
+  ⎿  Wrote 11 lines to src/usecases/getCompanySubmissionsByTicker.ts
+       1 import { resolveCik, UnknownTickerError } from '../services/tick
+         erDirectory'
+       2 import { CompanySubmissions } from '../types/submissions'
+       4 
+       5 export async function getCompanySubmissionsByTicker(ticker: stri
+         ng): Promise<CompanySubmissions> {
+       6   const cik = resolveCik(ticker)
+       8     throw new UnknownTickerError(ticker)
+       9   }
+      10   return getCompanySubmissions(cik)
+     … +3 lines (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+● Write(src/handlers/handleSubmissions.ts)
+  ⎿  Added 9 lines, removed 9 lines
+      1  import { Request, Response } from 'express'
+      2 -import { InvalidCikError } from '../lib/cik'                    
+      2  import { paginate } from '../lib/pagination'
+      3  import { SecEdgarNotFoundError } from '../services/secEdgarClien
+         t'
+      5 -import { getCompanySubmissions } from '../usecases/getCompanySub
+        -missions'                                                       
+      4 +import { UnknownTickerError } from '../services/tickerDirectory'
+      5 +import { getCompanySubmissionsByTicker } from '../usecases/getCo
+        +mpanySubmissionsByTicker'                                       
+      6  
+      7  const DEFAULT_PAGE = 1
+      8  const DEFAULT_LIMIT = 20
+     ...
+      21  
+      22  export async function handleSubmissions(req: Request, res: Resp
+          onse): Promise<void> {
+      23    // Express 5 types route params as `string | string[]` to acc
+          ount for
+      24 -  // repeated wildcard segments; our `:cik` segment is always a
+         - single value.                                                 
+      25 -  const cikParam = req.params.cik                              
+      26 -  const cik = Array.isArray(cikParam) ? cikParam[0] : cikParam 
+      24 +  // repeated wildcard segments; our `:ticker` segment is alway
+         +s a single value.                                              
+      25 +  const tickerParam = req.params.ticker                        
+      26 +  const ticker = Array.isArray(tickerParam) ? tickerParam[0] : 
+         +tickerParam                                                    
+      27  
+      28    const page = parsePositiveInt(req.query.page, DEFAULT_PAGE)
+      29    const limit = parsePositiveInt(req.query.limit, DEFAULT_LIMIT
+          , MAX_LIMIT)
+     ...
+      33    }
+      34  
+      35    try {
+      36 -    const submissions = await getCompanySubmissions(cik)       
+      36 +    const submissions = await getCompanySubmissionsByTicker(tic
+         +ker)                                                           
+      37      const paginatedFilings = paginate(submissions.filings, page
+          , limit)
+      38  
+      39      res.status(200).send({
+     ...
+      42        ...paginatedFilings,
+      43      })
+      44    } catch (error) {
+      45 -    if (error instanceof InvalidCikError) {                    
+      46 -      res.status(400).send({ message: error.message })         
+      45 +    if (error instanceof UnknownTickerError) {                 
+      46 +      res.status(404).send({ message: error.message })         
+      47        return
+      48      }
+      49      if (error instanceof SecEdgarNotFoundError) {
+      50        res.status(404).send({ message: error.message })
+      51        return
+      52      }
+      53 -    console.error('Failed to fetch submissions', { cik, error }
+         -)                                                              
+      53 +    console.error('Failed to fetch submissions', { ticker, erro
+         +r })                                                           
+      54      res.status(502).send({ message: 'Failed to fetch submission
+          s from SEC EDGAR' })
+      55    }
+      56  }
+
+● Update(src/routes/v1/submissions.ts)
+  ⎿  Added 1 line, removed 1 line
+      2  import { handleSubmissions } from '../../handlers/handleSubmissi
+         ons'
+      3  
+      4  const router = express.Router()
+      5 -router.get('/:cik', handleSubmissions)                          
+      5 +router.get('/:ticker', handleSubmissions)                       
+      6  
+      7  export default router
+
+● Write(src/index.ts)
+  ⎿  Added 16 lines, removed 5 lines
+       1  import express from 'express'
+       2  import { env } from './config/env'
+       3  import submissionsRouter from './routes/v1/submissions'
+       4 +import { loadTickerDirectory } from './services/tickerDirectory
+         +'                                                              
+       5  
+       5 -const app = express()                                          
+       6 +async function main(): Promise<void> {                         
+       7 +  // Pre-fetch SEC's ticker -> CIK directory once at startup so
+         + every request                                                 
+       8 +  // can resolve a ticker with an in-memory Map lookup instead 
+         +of a fetch.                                                    
+       9 +  await loadTickerDirectory()                                  
+      10  
+       7 -app.use(express.json())                                        
+       8 -app.use('/api/v1/submissions', submissionsRouter)              
+      11 +  const app = express()                                        
+      12 +  app.use(express.json())                                      
+      13 +  app.use('/api/v1/submissions', submissionsRouter)            
+      14  
+      10 -app.listen(env.port, () => {                                   
+      11 -  console.log(`Backend running on http://localhost:${env.port}`
+         -)                                                              
+      15 +  app.listen(env.port, () => {                                 
+      16 +    console.log(`Backend running on http://localhost:${env.port
+         +}`)                                                            
+      17 +  })                                                           
+      18 +}                                                              
+      19 +                                                               
+      20 +main().catch((error) => {                                      
+      21 +  console.error('Failed to start backend', error)              
+      22 +  process.exit(1)                                              
+      23  })
+
+● Now update the smoke-test script to use tickers instead of raw CIKs, then
+  build, lint, and test end-to-end.
+
+● Write(testService.sh)
+  ⎿  Added 4 lines, removed 4 lines
+      2  
+      3  BASE_URL="http://localhost:4000/api/v1"
+      4  
+      5 -echo "Testing GET /submissions/:cik (Apple, CIK 320193)"        
+      6 -curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/320193
+        -?page=1&limit=5"                                                
+      5 +echo "Testing GET /submissions/:ticker (Apple, AAPL)"           
+      6 +curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/AAPL?p
+        +age=1&limit=5"                                                  
+      7  
+      8 -echo "Testing GET /submissions/:cik with an invalid CIK"        
+      9 -curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/not-a-
+        -cik"                                                            
+      8 +echo "Testing GET /submissions/:ticker with an unknown ticker"  
+      9 +curl -s -w "\nHTTP %{http_code}\n" "$BASE_URL/submissions/NOT-A-
+        +REAL-TICKER"                                                    
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Both cases pass — 10,391 ticker→CIK mappings loaded at startup, AAPL resolves
+  and returns paginated filings, and an unknown ticker correctly 404s.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Done. Summary of what changed:
+
+  New: services/tickerDirectory.ts — fetches
+  https://www.sec.gov/files/company_tickers.json once via loadTickerDirectory(),
+  discards everything but ticker/cik_str, and builds a Map<string, string>
+  (ticker → zero-padded CIK) for O(1) lookup. resolveCik() reads from that map;
+  UnknownTickerError if the ticker isn't in it.
+
+  Startup wiring (index.ts): main() now awaits loadTickerDirectory() before the
+  server starts listening — the API won't accept traffic until the directory is
+  loaded in memory, and if the initial fetch fails, the process logs the error
+  and exits rather than serving with a broken lookup.
+
+  Route changed: GET /api/v1/submissions/:ticker (was :cik). The handler
+  resolves ticker → CIK via the new usecase getCompanySubmissionsByTicker, which
+  throws UnknownTickerError (→ 404) for anything not in the map; the existing
+  getCompanySubmissions(cik) usecase is untouched and still does the
+  fetch/transform/cache work.
+
+  Verified live: startup logged Loaded 10391 ticker -> CIK mappings; GET 
+  /submissions/AAPL?page=1&limit=5 returned paginated real filings; a garbage
+  ticker returned a clean 404 with no wasted call to SEC's submissions endpoint.
+
+  One thing worth flagging for later: the ticker map is loaded once and never
+  refreshed — fine since you called it static, but if the process runs for a
+  long time, new tickers added to SEC's file since boot won't resolve until a
+  restart. Let me know if/when that matters.
+
+✻ Cogitated for 2m 30s · done 2:10 PM
+
+❯ Create a NOTES.md and add this decision of loading ticker map only once       
+  during startup and never refreshed                                            
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● None exists yet. I'll put it in backend/ since this is a backend-specific
+  decision.
+
+● Write(NOTES.md)
+  ⎿  Wrote 20 lines to NOTES.md
+       1 # Notes
+       3 Running log of notable design decisions and their rationale.
+       4 
+         d
+       6 
+         n`, reduces it
+       8 to a `ticker -> CIK` `Map`, and loads it into memory a single ti
+       9 server starts (`main()` in `src/index.ts` awaits this before it 
+         starts
+         a schedule —
+     … +20 lines (ctrl+o to expand)
+
+● Created backend/NOTES.md documenting the decision — what it is, why (static
+  SEC data, no need for real-time freshness yet), and the trade-off (stale until
+  restart if new tickers are listed while the process is up). I'll keep
+  appending to this file as we make more of these calls along the way.
+
+✻ Churned for 14s · done 2:21 PM
+
+❯ Now I want to handle over-fetching the SEC EDGAR API. If a request is         
+  fetching submissions for company A, another concurrent request for A should   
+  wait for the first request's promise to resolve and use that data from cache  
+  instead. Change the fetching logic in getCompanySubmissions.ts usecase and    
+  save the promise returned from fetchCompanySubmissions immediately in the     
+  cache. All requests should first check if the CIK exists in the cache and     
+  await it if its value is a promise                                            
+  Read 2 files (ctrl+o to expand)
+
+● Update(src/lib/cache.ts)
+  ⎿  Added 6 lines, removed 4 lines
+      1  /**
+      2 - * Minimal in-memory cache. No TTL or eviction yet — entries liv
+        -e for the                                                       
+      3 - * lifetime of the process. This is intentionally basic; expiry 
+        -and                                                             
+      4 - * concurrency-safe population (e.g. avoiding duplicate in-fligh
+        -t fetches for                                                   
+      5 - * the same key) will be revisited later.                       
+      2 + * Minimal in-memory cache. No TTL yet — entries live for the li
+        +fetime of the                                                   
+      3 + * process. This is intentionally basic; expiry will be revisite
+        +d later.                                                        
+      4   */
+      5  export class InMemoryCache<T> {
+      6    private readonly store = new Map<string, T>()
+     ...
+      16    has(key: string): boolean {
+      17      return this.store.has(key)
+      18    }
+      19 +                                                               
+      20 +  delete(key: string): void {                                  
+      21 +    this.store.delete(key)                                     
+      22 +  }                                                            
+      23  }
+
+● Write(src/usecases/getCompanySubmissions.ts)
+  ⎿  Added 17 lines, removed 10 lines
+       2  import { normalizeCik } from '../lib/cik'
+       3  import { fetchCompanySubmissions } from '../services/secEdgarCl
+          ient'
+       4  import { transformRecentFilings } from '../transformers/submiss
+          ions'
+       5 -import { CompanySubmissions } from '../types/submissions'      
+       5 +import { CompanySubmissions, RawSubmissionsResponse } from '../
+         +types/submissions'                                             
+       6  
+       7 -const cache = new InMemoryCache<CompanySubmissions>()          
+       7 +// Cache the in-flight fetch *promise*, not just the resolved v
+         +alue. If a                                                     
+       8 +// second request for the same CIK comes in while the first is 
+         +still waiting                                                  
+       9 +// on SEC EDGAR, it finds this promise already in the cache and
+         + awaits it                                                     
+      10 +// instead of firing its own duplicate request - collapsing con
+         +current                                                        
+      11 +// requests for the same company into a single upstream fetch. 
+      12 +const cache = new InMemoryCache<Promise<RawSubmissionsResponse>
+         +>()                                                            
+      13  
+      14  export async function getCompanySubmissions(cikInput: string): 
+          Promise<CompanySubmissions> {
+      15    const cik = normalizeCik(cikInput)
+      16  
+      12 -  const cached = cache.get(cik)                                
+      13 -  if (cached) {                                                
+      14 -    return cached                                              
+      17 +  let pending = cache.get(cik)                                 
+      18 +  if (!pending) {                                              
+      19 +    pending = fetchCompanySubmissions(cik)                     
+      20 +    cache.set(cik, pending)                                    
+      21 +                                                               
+      22 +    // A failed fetch shouldn't permanently poison the cache fo
+         +r this CIK -                                                   
+      23 +    // let the next request try again instead of rejecting fore
+         +ver.                                                           
+      24 +    pending.catch(() => cache.delete(cik))                     
+      25    }
+      26  
+      17 -  const raw = await fetchCompanySubmissions(cik)               
+      18 -  const result: CompanySubmissions = {                         
+      27 +  const raw = await pending                                    
+      28 +  return {                                                     
+      29      cik,
+      30      name: raw.name,
+      31      filings: transformRecentFilings(raw.filings.recent),
+      32    }
+      23 -                                                               
+      24 -  cache.set(cik, result)                                       
+      25 -  return result                                                
+      33  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Now let's verify the coalescing actually works — fire two concurrent requests
+  for the same ticker and confirm the second doesn't trigger its own SEC fetch.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● The AAPL timing wasn't a clean test — this sandbox appears to cache outbound
+  HTTP responses at some layer, since a fresh (never-before-fetched) ticker like
+  MSFT took a real 1.45s while AAPL (fetched in earlier turns) came back in
+  milliseconds regardless of my code. Let me add a temporary debug marker and
+  test with a genuinely untouched ticker to verify only one upstream fetch
+  actually fires.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Added 1 line
+      30  
+      31  /** `cik` must already be normalized to SEC's zero-padded 10-di
+          git form. */
+      32  export async function fetchCompanySubmissions(cik: string): Pro
+          mise<RawSubmissionsResponse> {
+      33 +  console.log(`[DEBUG] upstream fetch fired for CIK ${cik}`) //
+         + temporary, for coalescing verification                        
+      34    const response = await fetch(`${SUBMISSIONS_BASE_URL}/CIK${ci
+          k}.json`, {
+      35      headers: REQUEST_HEADERS,
+      36    })
+
+  Searched for 1 pattern, ran 2 shell commands (ctrl+o to expand)
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Added 1 line, removed 1 line
+      30  
+      31  /** `cik` must already be normalized to SEC's zero-padded 10-di
+          git form. */
+      32  export async function fetchCompanySubmissions(cik: string): Pro
+          mise<RawSubmissionsResponse> {
+      33 -  console.log(`[DEBUG] upstream fetch fired for CIK ${cik}`) //
+         - temporary, for coalescing verification                        
+      33 +  require('fs').appendFileSync('/tmp/fetch-debug.log', `fetch f
+         +ired for ${cik}\n`) // temporary, for coalescing verification  
+      34    const response = await fetch(`${SUBMISSIONS_BASE_URL}/CIK${ci
+          k}.json`, {
+      35      headers: REQUEST_HEADERS,
+      36    })
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Confirmed: 5 concurrent requests for a never-before-fetched ticker (TSLA)
+  resulted in exactly one upstream fetch (fetch fired for 0001318605), all 5
+  responses identical, all resolving together in ~0.52s. Now let's remove the
+  debug instrumentation and rebuild clean.
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Removed 1 line
+      30  
+      31  /** `cik` must already be normalized to SEC's zero-padded 10-di
+          git form. */
+      32  export async function fetchCompanySubmissions(cik: string): Pro
+          mise<RawSubmissionsResponse> {
+      33 -  require('fs').appendFileSync('/tmp/fetch-debug.log', `fetch f
+         -ired for ${cik}\n`) // temporary, for coalescing verification  
+      33    const response = await fetch(`${SUBMISSIONS_BASE_URL}/CIK${ci
+          k}.json`, {
+      34      headers: REQUEST_HEADERS,
+      35    })
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Let me update NOTES.md with this decision, then wrap up.
+
+● Update(NOTES.md)
+  ⎿  Added 23 lines
+      18  adds after startup won't resolve until the service is restarted
+          . Revisit this
+      19  (e.g. periodic refresh, or refresh-on-miss) if staleness become
+          s a real
+      20  problem.
+      21 +                                                               
+      22 +## Submissions cache stores the in-flight promise, not just the
+         + resolved value                                                
+      23 +                                                               
+      24 +`usecases/getCompanySubmissions.ts` caches `Promise<RawSubmissi
+         +onsResponse>`                                                  
+      25 +per CIK, and caches it **immediately** — synchronously, right a
+         +fter calling                                                   
+      26 +`fetchCompanySubmissions(cik)`, before that promise has resolve
+         +d. Every call                                                  
+      27 +checks the cache first and, whether it finds a resolved or stil
+         +l-pending                                                      
+      28 +promise, just `await`s whatever is there.                      
+      29 +                                                               
+      30 +**Why:** without this, two requests for the same company arrivi
+         +ng close                                                       
+      31 +together (e.g. a burst of traffic right after startup, or a slo
+         +w upstream                                                     
+      32 +response) would each see an empty cache and both fire their own
+         + request to                                                    
+      33 +SEC EDGAR. Caching the promise itself means the second request 
+         +finds the                                                      
+      34 +first one's promise already in flight and rides along with it i
+         +nstead of                                                      
+      35 +triggering a duplicate fetch. Verified with 5 concurrent reques
+         +ts for a                                                       
+      36 +never-before-fetched ticker: exactly one upstream fetch fired, 
+         +and all 5                                                      
+      37 +responses came back identical.                                 
+      38 +                                                               
+      39 +**Trade-off accepted:** a failed fetch is explicitly evicted fr
+         +om the cache                                                   
+      40 +(via a `.catch()` that deletes the entry) so a transient SEC er
+         +ror doesn't                                                    
+      41 +permanently poison that CIK — the next request gets a fresh att
+         +empt. This                                                     
+      42 +wasn't asked for outright but follows directly from caching pro
+         +mises: without                                                 
+      43 +it, one failure would be cached forever as a rejection.        
+
+● Done. Summary:
+
+  lib/cache.ts — added a delete(key) method to the generic InMemoryCache<T>.
+
+  usecases/getCompanySubmissions.ts — the cache now holds
+  Promise<RawSubmissionsResponse> instead of the resolved CompanySubmissions.
+  The promise from fetchCompanySubmissions(cik) is stored in the cache
+  synchronously, before it resolves. Every call — first or concurrent — checks
+  the cache and awaits whatever's there, so a second request for the same CIK
+  rides the first request's in-flight promise instead of firing its own. The
+  transform step now runs on every await (once per request, not once per fetch),
+  which is cheap and keeps the cached value as close as possible to exactly
+  what you described.
+
+  One addition beyond what you asked: a failed fetch evicts itself from the
+  cache (pending.catch(() => cache.delete(cik))) so a transient SEC error
+  doesn't get cached as a permanent rejection — otherwise every future request
+  for that CIK would fail forever until restart. Flagging it since you didn't
+  ask for it explicitly, but it's a direct consequence of caching promises
+  rather than values; happy to remove if you'd rather handle retry logic
+  differently later.
+
+  Verified for real (not just by inspection): instrumented the fetch call
+  temporarily, fired 5 concurrent requests for a ticker (TSLA) never touched
+  before in this process, confirmed exactly one upstream SEC fetch fired and all
+  5 responses came back byte-identical — then removed the instrumentation and
+  rebuilt clean.
+
+  NOTES.md updated with this decision, including the trade-off around cache
+  eviction on failure.
+
+✻ Crunched for 5m 51s · done 3:18 PM
+
+❯ We are normalizing CIK when we load the ticker directory on startup. This     
+  means we don't have to do it on each request                                  
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src/usecases/getCompanySubmissions.ts)  ⎿  Added 4 lines, removed 4 lines
+      1  import { InMemoryCache } from '../lib/cache'
+      2 -import { normalizeCik } from '../lib/cik'                       
+      2  import { fetchCompanySubmissions } from '../services/secEdgarCli
+         ent'
+      3  import { transformRecentFilings } from '../transformers/submissi
+         ons'
+      4  import { CompanySubmissions, RawSubmissionsResponse } from '../t
+         ypes/submissions'
+     ...
+      10  // requests for the same company into a single upstream fetch.
+      11  const cache = new InMemoryCache<Promise<RawSubmissionsResponse>
+          >()
+      12  
+      14 -export async function getCompanySubmissions(cikInput: string): 
+         -Promise<CompanySubmissions> {                                  
+      15 -  const cik = normalizeCik(cikInput)                           
+      16 -                                                               
+      13 +/** `cik` must already be normalized to SEC's zero-padded 10-di
+         +git form - the                                                 
+      14 + * ticker directory normalizes it once at load time, so callers
+         + resolving a                                                   
+      15 + * CIK from a ticker never need to normalize it again per reque
+         +st. */                                                         
+      16 +export async function getCompanySubmissions(cik: string): Promi
+         +se<CompanySubmissions> {                                       
+      17    let pending = cache.get(cik)
+      18    if (!pending) {
+      19      pending = fetchCompanySubmissions(cik)
+
+● Now let's build and lint to confirm nothing else relied on that normalization
+  happening here.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Confirmed working. Summary:
+
+  usecases/getCompanySubmissions.ts — removed the normalizeCik(cikInput) call.
+  tickerDirectory.ts already runs each CIK through normalizeCik exactly once,
+  when the map is built at startup, so every cik that reaches this usecase (via
+  resolveCik()) is already in its canonical zero-padded form. The parameter is
+  renamed from cikInput to cik and documented as expecting an already-normalized
+  value, so the per-request regex validation + padding work that used to run on
+  every single call is gone — it now only happens once per ticker, at startup.
+
+  lib/cik.ts (normalizeCik/InvalidCikError) is untouched and still does its job
+  inside tickerDirectory.ts. Rebuilt, linted clean, and re-verified against a
+  live request (AAPL still resolves and paginates correctly).
+
+✻ Cooked for 51s · done 3:30 PM
+
+❯ Allow filtering the results by form. You should simply use .filter() on the   
+  transformed response when a filter is detected in the query params            
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src/handlers/handleSubmissions.ts)
+  ⎿  Added 10 lines
+      19    return max ? Math.min(parsed, max) : parsed
+      20  }
+      21  
+      22 +function parseStringParam(value: unknown): string | undefined {
+      23 +  if (typeof value === 'string') {                             
+      24 +    return value                                               
+      25 +  }                                                            
+      26 +  if (Array.isArray(value) && typeof value[0] === 'string') {  
+      27 +    return value[0]                                            
+      28 +  }                                                            
+      29 +  return undefined                                             
+      30 +}                                                              
+      31 +                                                               
+      32  export async function handleSubmissions(req: Request, res: Resp
+          onse): Promise<void> {
+      33    // Express 5 types route params as `string | string[]` to acc
+          ount for
+      34    // repeated wildcard segments; our `:ticker` segment is alway
+          s a single value.
+
+● Update(src/handlers/handleSubmissions.ts)
+  ⎿  Added 6 lines, removed 1 line
+      42      return
+      43    }
+      44  
+      45 +  const form = parseStringParam(req.query.form)                
+      46 +                                                               
+      47    try {
+      48      const submissions = await getCompanySubmissionsByTicker(tic
+          ker)
+      47 -    const paginatedFilings = paginate(submissions.filings, page
+         -, limit)                                                       
+      49 +    const filings = form                                       
+      50 +      ? submissions.filings.filter((filing) => filing.form.toLo
+         +werCase() === form.toLowerCase())                              
+      51 +      : submissions.filings                                    
+      52 +    const paginatedFilings = paginate(filings, page, limit)    
+      53  
+      54      res.status(200).send({
+      55        cik: submissions.cik,
+
+● Now build, lint, and verify against a live request.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Confirmed: ?form=10-q (lowercase) correctly matches all 10-Q filings only
+  (total: 34 vs 1000 unfiltered), total/totalPages reflect the filtered set, and
+  pagination applies on top of it.
+
+  Read 1 file (ctrl+o to expand)
+
+● Done. Summary: GET /api/v1/submissions/:ticker?form=10-K now filters the
+  transformed filings via .filter() (case-insensitive exact match on
+  filing.form) before pagination, so total/totalPages reflect the filtered set
+  rather than the full history. No filter param means unfiltered, as before.
+
+✻ Brewed for 57s · done 3:39 PM
+
+❯ The response should also include a URL to the original filing document. The   
+  way we form the URL is https://www.sec.gov/Archives/edgar/data/<CIK-without-p 
+  adding>/<accessionNumber-without-dashes>/<accessionNumber>-index.htm          
+
+  Read 3 files (ctrl+o to expand)
+
+● Now let's add filingUrl to the Filing type, build it in the transformer (which
+  needs the CIK), and thread it through from the usecase.
+
+● Update(src/types/submissions.ts)
+  ⎿  Added 2 lines
+      51    isInlineXBRL: boolean
+      52    primaryDocument: string
+      53    primaryDocDescription: string
+      54 +  /** Link to the filing's index page on SEC EDGAR. */         
+      55 +  filingUrl: string                                            
+      56  }
+      57  
+      58  export interface CompanySubmissions {
+
+● Write(src/transformers/submissions.ts)
+  ⎿  Added 11 lines, removed 1 line
+       1  import { Filing, RawRecentFilings } from '../types/submissions'
+       2  
+       3 +const EDGAR_ARCHIVES_BASE_URL = 'https://www.sec.gov/Archives/e
+         +dgar/data'                                                     
+       4 +                                                               
+       5 +/** Builds a link to a filing's index page on SEC EDGAR. `cik` 
+         +may be zero-padded. */                                         
+       6 +function buildFilingUrl(cik: string, accessionNumber: string): 
+         +string {                                                       
+       7 +  const cikWithoutPadding = String(Number(cik))                
+       8 +  const accessionNumberWithoutDashes = accessionNumber.replace(
+         +/-/g, '')                                                      
+       9 +  return `${EDGAR_ARCHIVES_BASE_URL}/${cikWithoutPadding}/${acc
+         +essionNumberWithoutDashes}/${accessionNumber}-index.htm`       
+      10 +}                                                              
+      11 +                                                               
+      12  /**
+      13   * SEC EDGAR returns `filings.recent` as a set of parallel arra
+          ys (columnar
+      14   * data) rather than an array of filing objects. This zips them
+           back into one
+      15   * object per filing, indexed by position.
+      16   */
+       8 -export function transformRecentFilings(recent: RawRecentFilings
+         -): Filing[] {                                                  
+      17 +export function transformRecentFilings(recent: RawRecentFilings
+         +, cik: string): Filing[] {                                     
+      18    const count = recent.accessionNumber.length
+      19  
+      20    const filings: Filing[] = []
+     ...
+      34        isInlineXBRL: recent.isInlineXBRL[i] === 1,
+      35        primaryDocument: recent.primaryDocument[i],
+      36        primaryDocDescription: recent.primaryDocDescription[i],
+      37 +      filingUrl: buildFilingUrl(cik, recent.accessionNumber[i])
+         +,                                                              
+      38      })
+      39    }
+      40    return filings
+
+● Update(src/usecases/getCompanySubmissions.ts)
+  ⎿  Added 1 line, removed 1 line
+      28    return {
+      29      cik,
+      30      name: raw.name,
+      31 -    filings: transformRecentFilings(raw.filings.recent),       
+      31 +    filings: transformRecentFilings(raw.filings.recent, cik),  
+      32    }
+      33  }
+
+● Now build, lint, and verify against real data.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Confirmed correct — matches SEC's real archive URL format: https://www.sec.gov
+  /Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm
+  (CIK unpadded to 320193, accession number without dashes for the directory
+  segment, full accession number retained in the filename).
+
+  Summary:
+  - types/submissions.ts — added filingUrl: string to Filing.
+  - transformers/submissions.ts — transformRecentFilings now also takes cik and
+    builds each filing's filingUrl via a small buildFilingUrl(cik, 
+    accessionNumber) helper (strips CIK padding via Number(), strips dashes from
+    the accession number for the path segment).
+  - usecases/getCompanySubmissions.ts — passes cik through to the transformer.
+
+  Verified against a live AAPL request that the returned filingUrl is
+  well-formed and points at the correct index page.
+
+✻ Crunched for 1m 4s · done 3:56 PM
+
+❯ Convert backend/src/types to zod schemas                                      
+
+  Searched for 2 patterns, ran 3 shell commands (ctrl+o to expand)
+● Write(src/types/submissions.ts)
+  ⎿  Added 66 lines, removed 51 lines
+       1 +import { z } from 'zod'                                        
+       2 +                                                               
+       3  /**
+       4   * Shape of the `filings.recent` object as returned by SEC EDGA
+          R's submissions
+       5   * API. Every field is a parallel array: the filing at index `i
+          ` is described
+       6   * by `accessionNumber[i]`, `filingDate[i]`, `form[i]`, etc.
+       5 - *                                                             
+       7 + */                                                            
+       8 +export const RawRecentFilingsSchema = z.object({               
+       9 +  accessionNumber: z.array(z.string()),                        
+      10 +  filingDate: z.array(z.string()),                             
+      11 +  reportDate: z.array(z.string()),                             
+      12 +  acceptanceDateTime: z.array(z.string()),                     
+      13 +  act: z.array(z.string()),                                    
+      14 +  form: z.array(z.string()),                                   
+      15 +  fileNumber: z.array(z.string()),                             
+      16 +  filmNumber: z.array(z.string()),                             
+      17 +  items: z.array(z.string()),                                  
+      18 +  size: z.array(z.number()),                                   
+      19 +  isXBRL: z.array(z.number()),                                 
+      20 +  isInlineXBRL: z.array(z.number()),                           
+      21 +  primaryDocument: z.array(z.string()),                        
+      22 +  primaryDocDescription: z.array(z.string()),                  
+      23 +})                                                             
+      24 +export type RawRecentFilings = z.infer<typeof RawRecentFilingsS
+         +chema>                                                         
+      25 +                                                               
+      26 +/**                                                            
+      27   * SEC's response has more top-level company metadata (name, si
+          c, tickers,
+      28   * exchanges, ...) and `filings.files` (links to older, paginat
+          ed filings).
+       8 - * We don't need any of that yet, so `RawSubmissionsResponse` o
+         -nly types what                                                 
+       9 - * we actually read and passes the rest through loosely.       
+      29 + * We don't need any of that yet, so this only validates what w
+         +e actually                                                     
+      30 + * read and passes the rest through untouched.                 
+      31   */
+      11 -export interface RawRecentFilings {                            
+      12 -  accessionNumber: string[]                                    
+      13 -  filingDate: string[]                                         
+      14 -  reportDate: string[]                                         
+      15 -  acceptanceDateTime: string[]                                 
+      16 -  act: string[]                                                
+      17 -  form: string[]                                               
+      18 -  fileNumber: string[]                                         
+      19 -  filmNumber: string[]                                         
+      20 -  items: string[]                                              
+      21 -  size: number[]                                               
+      22 -  isXBRL: number[]                                             
+      23 -  isInlineXBRL: number[]                                       
+      24 -  primaryDocument: string[]                                    
+      25 -  primaryDocDescription: string[]                              
+      26 -}                                                              
+      32 +export const RawSubmissionsResponseSchema = z                  
+      33 +  .object({                                                    
+      34 +    cik: z.string(),                                           
+      35 +    name: z.string(),                                          
+      36 +    filings: z.object({                                        
+      37 +      recent: RawRecentFilingsSchema,                          
+      38 +      files: z.array(                                          
+      39 +        z.object({                                             
+      40 +          name: z.string(),                                    
+      41 +          filingCount: z.number(),                             
+      42 +          filingFrom: z.string(),                              
+      43 +          filingTo: z.string(),                                
+      44 +        }),                                                    
+      45 +      ),                                                       
+      46 +    }),                                                        
+      47 +  })                                                           
+      48 +  .passthrough()                                               
+      49 +export type RawSubmissionsResponse = z.infer<typeof RawSubmissi
+         +onsResponseSchema>                                             
+      50  
+      28 -export interface RawSubmissionsResponse {                      
+      29 -  cik: string                                                  
+      30 -  name: string                                                 
+      31 -  filings: {                                                   
+      32 -    recent: RawRecentFilings                                   
+      33 -    files: Array<{ name: string; filingCount: number; filingFro
+         -m: string; filingTo: string }>                                 
+      34 -  }                                                            
+      35 -  [key: string]: unknown                                       
+      36 -}                                                              
+      37 -                                                               
+      51  /** One filing, transformed from the columnar `RawRecentFilings
+          ` into a plain object. */
+      39 -export interface Filing {                                      
+      40 -  accessionNumber: string                                      
+      41 -  filingDate: string                                           
+      42 -  reportDate: string                                           
+      43 -  acceptanceDateTime: string                                   
+      44 -  act: string                                                  
+      45 -  form: string                                                 
+      46 -  fileNumber: string                                           
+      47 -  filmNumber: string                                           
+      48 -  items: string                                                
+      49 -  size: number                                                 
+      50 -  isXBRL: boolean                                              
+      51 -  isInlineXBRL: boolean                                        
+      52 -  primaryDocument: string                                      
+      53 -  primaryDocDescription: string                                
+      52 +export const FilingSchema = z.object({                         
+      53 +  accessionNumber: z.string(),                                 
+      54 +  filingDate: z.string(),                                      
+      55 +  reportDate: z.string(),                                      
+      56 +  acceptanceDateTime: z.string(),                              
+      57 +  act: z.string(),                                             
+      58 +  form: z.string(),                                            
+      59 +  fileNumber: z.string(),                                      
+      60 +  filmNumber: z.string(),                                      
+      61 +  items: z.string(),                                           
+      62 +  size: z.number(),                                            
+      63 +  isXBRL: z.boolean(),                                         
+      64 +  isInlineXBRL: z.boolean(),                                   
+      65 +  primaryDocument: z.string(),                                 
+      66 +  primaryDocDescription: z.string(),                           
+      67    /** Link to the filing's index page on SEC EDGAR. */
+      55 -  filingUrl: string                                            
+      56 -}                                                              
+      68 +  filingUrl: z.string(),                                       
+      69 +})                                                             
+      70 +export type Filing = z.infer<typeof FilingSchema>              
+      71  
+      58 -export interface CompanySubmissions {                          
+      59 -  cik: string                                                  
+      60 -  name: string                                                 
+      61 -  filings: Filing[]                                            
+      62 -}                                                              
+      72 +export const CompanySubmissionsSchema = z.object({             
+      73 +  cik: z.string(),                                             
+      74 +  name: z.string(),                                            
+      75 +  filings: z.array(FilingSchema),                              
+      76 +})                                                             
+      77 +export type CompanySubmissions = z.infer<typeof CompanySubmissi
+         +onsSchema>                                                     
+
+● Write(src/types/tickers.ts)
+  ⎿  Added 10 lines, removed 6 lines
+       1 +import { z } from 'zod'                                        
+       2 +                                                               
+       3  /**
+       4   * Shape of https://www.sec.gov/files/company_tickers.json — an
+           object keyed
+       5   * by an arbitrary numeric index, each value describing one tic
+          ker.
+       6   */
+       5 -export interface RawCompanyTickerEntry {                       
+       6 -  cik_str: number                                              
+       7 -  ticker: string                                               
+       8 -  title: string                                                
+       9 -}                                                              
+       7 +export const RawCompanyTickerEntrySchema = z.object({          
+       8 +  cik_str: z.number(),                                         
+       9 +  ticker: z.string(),                                          
+      10 +  title: z.string(),                                           
+      11 +})                                                             
+      12 +export type RawCompanyTickerEntry = z.infer<typeof RawCompanyTi
+         +ckerEntrySchema>                                               
+      13  
+      11 -export type RawCompanyTickers = Record<string, RawCompanyTicker
+         -Entry>                                                         
+      14 +export const RawCompanyTickersSchema = z.record(z.string(), Raw
+         +CompanyTickerEntrySchema)                                      
+      15 +export type RawCompanyTickers = z.infer<typeof RawCompanyTicker
+         +sSchema>                                                       
+
+● Now let's use these schemas at the actual trust boundary — where SEC's raw
+  JSON enters the system — instead of blind type assertions.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Added 2 lines, removed 2 lines
+      1  import { env } from '../config/env'
+      2 -import { RawSubmissionsResponse } from '../types/submissions'   
+      3 -import { RawCompanyTickers } from '../types/tickers'            
+      2 +import { RawSubmissionsResponse, RawSubmissionsResponseSchema } 
+        +from '../types/submissions'                                     
+      3 +import { RawCompanyTickers, RawCompanyTickersSchema } from '../t
+        +ypes/tickers'                                                   
+      4  
+      5  const SUBMISSIONS_BASE_URL = 'https://data.sec.gov/submissions'
+      6  const COMPANY_TICKERS_URL = 'https://www.sec.gov/files/company_t
+         ickers.json'
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Added 1 line, removed 1 line
+      41      throw new SecEdgarRequestError(`CIK ${cik}`, response.statu
+          s)
+      42    }
+      43  
+      44 -  return (await response.json()) as RawSubmissionsResponse     
+      44 +  return RawSubmissionsResponseSchema.parse(await response.json
+         +())                                                            
+      45  }
+      46  
+      47  /** The full ticker -> company directory SEC publishes as one s
+          tatic file. */
+
+● Update(src/services/secEdgarClient.ts)
+  ⎿  Added 1 line, removed 1 line
+      52      throw new SecEdgarRequestError('company_tickers.json', resp
+          onse.status)
+      53    }
+      54  
+      55 -  return (await response.json()) as RawCompanyTickers          
+      55 +  return RawCompanyTickersSchema.parse(await response.json())  
+      56  }
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Now let's smoke-test end-to-end to confirm the runtime .parse() calls against
+  real SEC data actually succeed (not just compile).
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Both live requests succeeded, which also confirms the new schemas correctly
+  validate real SEC payloads — RawCompanyTickersSchema.parse() handled the full
+  ~10k-entry ticker file at startup, and RawSubmissionsResponseSchema.parse()
+  handled Apple's actual submissions response.
+
+  Summary of changes:
+
+  - types/submissions.ts — RawRecentFilings, RawSubmissionsResponse, Filing,
+    CompanySubmissions are now z.object(...) schemas with the type exported via
+    z.infer. RawSubmissionsResponseSchema uses .passthrough() since SEC's real
+    payload has plenty of top-level fields (name, sic, tickers, exchanges,
+    filings.files, ...) we deliberately don't model.
+  - types/tickers.ts — same treatment: RawCompanyTickerEntrySchema (object) and
+    RawCompanyTickersSchema (z.record(z.string(), RawCompanyTickerEntrySchema)).
+  - services/secEdgarClient.ts — this is the actual trust boundary, so I didn't
+    stop at just re-typing: both fetchCompanySubmissions and fetchCompanyTickers
+    now call Schema.parse(await response.json()) instead of a blind as RawX
+    type assertion. Previously a shape change on SEC's end would've silently
+    produced malformed objects that blew up somewhere downstream with a
+    confusing error; now it fails fast at the fetch site with a clear Zod
+    validation error.
+
+  Nothing else needed to change — transformers/submissions.ts,
+  usecases/getCompanySubmissions.ts, and services/tickerDirectory.ts all just
+  import the same type names, which now happen to be z.infer'd rather than
+  hand-written interfaces, so they kept compiling unchanged. A validation
+  failure now falls through to the handler's existing generic catch block and
+  surfaces as a 502 ("Failed to fetch submissions from SEC EDGAR"), which is the
+  same "something went wrong upstream" behavior you already had for any other
+  transport failure.
+
+✻ Baked for 2m 36s · done 7:38 PM
