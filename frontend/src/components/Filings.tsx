@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 import { type PaginatedResult, type Filing } from 'shared/types'
-import { parsePositiveInt } from 'shared/utils'
+import { parsePositiveInt, parseStringParam } from 'shared/utils'
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ import {
 } from './ui/pagination'
 import { getVisiblePageRange } from '../lib/utils'
 import { FilingsForm } from './FilingsForm'
+import { FormFilter } from './FormFilter'
 
 const PAGINATION_WINDOW_SIZE = 6
 
@@ -36,6 +37,7 @@ export function Filings() {
 
   const ticker = searchParams.get('ticker')
   const page = parsePositiveInt(searchParams.get('page'), 1)
+  const form = parseStringParam(searchParams.get('form'))
 
   useEffect(() => {
     const fetchFilings = async () => {
@@ -46,14 +48,14 @@ export function Filings() {
       })
 
       const response = await fetch(
-        `http://localhost:4000/v1/companies/${ticker}/filings?page=${page}`
+        `http://localhost:4000/v1/companies/${ticker}/filings?page=${page}&form=${form}`
       )
       if (!response.ok) {
         setFilingsState({
           kind: 'error',
           reason: 'Failed to fetch',
         })
-        console.log('couldnt fetch')
+        console.error(`The response for ticker ${ticker} was not ok`, response.statusText)
         return
       }
 
@@ -70,15 +72,21 @@ export function Filings() {
     }
 
     ticker && fetchFilings()
-  }, [page, ticker])
+  }, [page, ticker, form])
 
   const handleTickerChange = (newTicker: string) => {
-    setSearchParams({ ticker: newTicker, page: '1' })
+    setSearchParams({ ticker: newTicker, page: '1', form: form || "" })
   }
 
   const handlePageChange = (page: string) => {
     if (typeof ticker === 'string') {
-      setSearchParams({ ticker: ticker, page })
+      setSearchParams({ ticker: ticker, page, form: form || "" })
+    }
+  }
+
+  const handleFilterChange = (form: string) => {
+    if (typeof ticker === 'string') {
+      setSearchParams({ ticker: ticker, page: '1', form })
     }
   }
 
@@ -102,7 +110,7 @@ export function Filings() {
             <TableBody>
               {filings.map((filing) => (
                 <TableRow key={filing.accessionNumber}>
-                  <TableCell>{filing.accessionNumber}</TableCell>
+                  <TableCell className="underline decoration-sky-500 decoration-2"><a href={filing.filingUrl} target="_blank">{filing.accessionNumber}</a></TableCell>
                   <TableCell>{filing.filingDate}</TableCell>
                   <TableCell>{filing.reportDate}</TableCell>
                   <TableCell>{filing.act}</TableCell>
@@ -176,6 +184,7 @@ export function Filings() {
   return (
     <>
       <FilingsForm ticker={ticker ?? ''} onTickerChange={handleTickerChange} />
+      <FormFilter formFilter={form} onFilterChange={handleFilterChange}/>
       <div className="border-1 rounded-md py-3 mb-3 w-3xl">{renderFilings()}</div>
       {renderPagination()}
     </>
