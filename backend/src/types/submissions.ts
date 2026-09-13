@@ -18,24 +18,31 @@ export const RawRecentFilingsSchema = z.object({
 })
 export type RawRecentFilings = z.infer<typeof RawRecentFilingsSchema>
 
-export const RawSubmissionsResponseSchema = z
-  .object({
-    cik: z.string(),
-    name: z.string(),
-    filings: z.object({
-      recent: RawRecentFilingsSchema,
-      files: z.array(
-        z.object({
-          name: z.string(),
-          filingCount: z.number(),
-          filingFrom: z.string(),
-          filingTo: z.string(),
-        }),
-      ),
-    }),
-  })
+export const RawSubmissionsResponseSchema = z.object({
+  cik: z.string(),
+  name: z.string(),
+  filings: z.object({
+    recent: RawRecentFilingsSchema,
+    files: z.array(
+      z.object({
+        name: z.string(),
+        filingCount: z.number(),
+        filingFrom: z.string(),
+        filingTo: z.string(),
+      })
+    ),
+  }),
+})
 
 export type RawSubmissionsResponse = z.infer<typeof RawSubmissionsResponseSchema>
+
+export const SubmissionsReturnSchema = z.object({
+  cik: z.string(),
+  name: z.string(),
+  filings: RawRecentFilingsSchema,
+})
+
+export type SubmissionsReturn = z.infer<typeof SubmissionsReturnSchema>
 
 /** One filing, transformed from the columnar `RawRecentFilings` into a plain object. */
 export const FilingSchema = z.object({
