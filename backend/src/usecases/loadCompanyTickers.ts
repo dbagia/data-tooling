@@ -7,6 +7,13 @@ export class UnknownTickerError extends Error {
   }
 }
 
+export class TickersNotLoadedError extends Error {
+  constructor() {
+    super(`Tickers haven't been loaded. Cannot continue`)
+    this.name = 'TickersNotLoaded'
+  }
+}
+
 // Company tickers will be cached here
 let tickerToCik: Map<string, string> = new Map()
 
@@ -25,7 +32,7 @@ export async function loadCompanyTickers(): Promise<void> {
 
 export function getCikFromTicker(ticker: string): string | undefined {
   if (!tickerToCik) {
-    throw new Error('Company tickers havent been loaded. Cannot continue')
+    throw new TickersNotLoadedError()
   }
   return tickerToCik.get(ticker)
 }

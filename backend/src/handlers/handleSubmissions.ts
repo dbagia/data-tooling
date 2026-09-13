@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
+import { prettifyError, ZodError } from 'zod'
+import { parsePositiveInt, parseStringParam } from 'shared/utils'
 import { paginate } from '../utils/pagination'
-import { parsePositiveInt, parseStringParam } from '../utils/request'
 import { getSubmissions } from '../usecases/getSubmissions'
-import { UnknownTickerError } from '../usecases/loadCompanyTickers'
+import { UnknownTickerError, TickersNotLoadedError } from '../usecases/loadCompanyTickers'
 import { EdgarRequestError } from '../clients/EdgarClient'
 
 const DEFAULT_PAGE = 1
@@ -37,15 +38,36 @@ export async function handleSubmissions(req: Request, res: Response): Promise<vo
       ...paginatedFilings,
     })
   } catch (error) {
+    if (error instanceof TickersNotLoadedError) {
+      console.error('Company tickers are not loaded on the server yet', {
+        ticker,
+        message: error.message,
+      })
+      res.status(500).send({ ticker, message: 'Something went wrong' })
+      return
+    }
     if (error instanceof UnknownTickerError) {
-      res.status(404).send({ message: error.message })
+      console.error('Ticker not found', { ticker, message: error.message })
+      res.status(404).send({ ticker, message: error.message })
       return
     }
     if (error instanceof EdgarRequestError) {
-      res.status(404).send({ message: error.message })
+      // Do not propagate 403 to client
+      if (error.status === 403) {
+        console.error('Received 403 from Edgar API', { ticker, message: error.message })
+        res.status(500).send({ ticker, message: 'Something went wrong' })
+        return
+      }
+
+      res.status(error.status).send({ ticker, message: error.message })
+      return
+    }
+    if (error instanceof ZodError) {
+      console.error('Zod validation failed', { ticker, message: prettifyError(error) })
+      res.status(500).send({ ticker, message: 'Something went wrong' })
       return
     }
     console.error('Failed to fetch submissions', { ticker, error })
-    res.status(502).send({ message: 'Failed to fetch submissions from SEC EDGAR' })
+    res.status(500).send({ ticker, message: 'Something went wrong' })
   }
 }

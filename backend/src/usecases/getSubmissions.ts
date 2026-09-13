@@ -1,4 +1,4 @@
-import { CompanySubmissions, RawSubmissionsResponse } from '../types/submissions'
+import { CompanySubmissions, SubmissionsReturn } from '../types/submissions'
 import { getCikFromTicker, UnknownTickerError } from './loadCompanyTickers'
 import { fetchCompanySubmissions } from '../clients/EdgarClient'
 import { transformRecentFilings } from '../utils/submissions'
@@ -9,13 +9,13 @@ const normalizeCik = (cik: string): string => {
   return cik.padStart(CIK_LENGTH, '0')
 }
 
-const cache = new Map<string, Promise<RawSubmissionsResponse>>()
+const cache = new Map<string, Promise<SubmissionsReturn>>()
 
 export async function getSubmissions(ticker: string): Promise<CompanySubmissions> {
   const rawCik = getCikFromTicker(ticker.toUpperCase())
 
   if (!rawCik) {
-    throw new UnknownTickerError('Ticker not found')
+    throw new UnknownTickerError(ticker)
   }
 
   const cik = normalizeCik(rawCik)
@@ -36,6 +36,6 @@ export async function getSubmissions(ticker: string): Promise<CompanySubmissions
   return {
     cik,
     name: raw.name,
-    filings: transformRecentFilings(raw.filings.recent, cik),
+    filings: transformRecentFilings(raw.filings, cik),
   }
 }

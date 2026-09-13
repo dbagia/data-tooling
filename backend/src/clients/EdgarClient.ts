@@ -1,4 +1,9 @@
-import { RawSubmissionsResponse, RawSubmissionsResponseSchema, RawRecentFilingsSchema} from '../types/submissions'
+import {
+  RawSubmissionsResponseSchema,
+  RawRecentFilingsSchema,
+  RawSubmissionsResponse,
+  SubmissionsReturn,
+} from '../types/submissions'
 import { RawCompanyTickers, RawCompanyTickersSchema } from '../types/tickers'
 
 const COMPANY_TICKERS_URL = 'https://www.sec.gov/files/company_tickers.json'
@@ -8,8 +13,9 @@ export class EdgarRequestError extends Error {
   constructor(
     resource: string,
     public readonly status: number,
+    public readonly statusText: string
   ) {
-    super(`SEC EDGAR request for ${resource} failed with status ${status}`)
+    super(`SEC EDGAR request for ${resource} failed with status ${status} because ${statusText}`)
     this.name = 'EdgarRequestError'
   }
 }
@@ -18,7 +24,7 @@ export async function fetchCompanyTickers(): Promise<RawCompanyTickers> {
   const response = await fetch(COMPANY_TICKERS_URL)
 
   if (!response.ok) {
-    throw new EdgarRequestError('company_tickers.json', response.status)
+    throw new EdgarRequestError('company_tickers.json', response.status, response.statusText)
   }
 
   return RawCompanyTickersSchema.parse(await response.json())
@@ -41,39 +47,53 @@ function mergeColumnarRecords<T extends Record<string, unknown[]>>(base: T, extr
   return merged
 }
 
-export async function fetchCompanySubmissions(cik: string): Promise<RawSubmissionsResponse> {
+// Fetches all filings for the given CIK including the extra filings beyond the
+// recent 1000 entries. The EdgarClient hides/abstracts this detail from other parts of
+// the system
+export async function fetchCompanySubmissions(cik: string): Promise<SubmissionsReturn> {
   const url = `${SUBMISSIONS_BASE_URL}/CIK${cik}.json`
-  console.log({ url })
 
+  // TODO: Implement handling request timeouts
   const response = await fetch(url)
 
   if (!response.ok) {
-    throw new EdgarRequestError(`CIK ${cik}`, response.status)
+    throw new EdgarRequestError(`CIK ${cik}`, response.status, response.statusText)
   }
 
-  const rawResult = RawSubmissionsResponseSchema.parse(await response.json())
+  const rawResult: RawSubmissionsResponse = RawSubmissionsResponseSchema.parse(
+    await response.json()
+  )
 
-  const hasMoreResults = rawResult.filings.files && Array.isArray(rawResult.filings.files) && rawResult.filings.files.length > 0
+  const hasMoreResults =
+    rawResult.filings.files &&
+    Array.isArray(rawResult.filings.files) &&
+    rawResult.filings.files.length > 0
 
-  if(hasMoreResults) {
-    const promises = rawResult.filings.files.map((file) => {
-      const fileName = file.name
-      return fetch(`${SUBMISSIONS_BASE_URL}/${fileName}`)
-    })
+  if (hasMoreResults) {
+    const responses = await Promise.all(
+      rawResult.filings.files.map(async (file) => ({
+        fileName: file.name,
+        response: await fetch(`${SUBMISSIONS_BASE_URL}/${file.name}`),
+      }))
+    )
 
-    const responses = await Promise.all(promises)
-
-    for(const response of responses) {
+    for (const { fileName, response } of responses) {
       if (!response.ok) {
-        throw new EdgarRequestError(`CIK ${cik}`, response.status)
+        throw new EdgarRequestError(
+          `CIK ${cik} file ${fileName}`,
+          response.status,
+          response.statusText
+        )
       }
 
       const extraResult = RawRecentFilingsSchema.parse(await response.json())
-
       rawResult.filings.recent = mergeColumnarRecords(rawResult.filings.recent, extraResult)
     }
   }
 
-  return rawResult
+  return {
+    cik: rawResult.cik,
+    name: rawResult.name,
+    filings: rawResult.filings.recent,
+  }
 }
-
