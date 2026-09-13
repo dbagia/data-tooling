@@ -8,3 +8,13 @@ export function parsePositiveInt(value: unknown, fallback: number, max?: number)
   }
   return max ? Math.min(parsed, max) : parsed
 }
+
+export function parseStringParam(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value
+  }
+  if (Array.isArray(value) && typeof value[0] === 'string') {
+    return value[0]
+  }
+  return undefined
+}
